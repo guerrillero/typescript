@@ -1,54 +1,79 @@
-import React, { useState } from "react";
-import PropTypes from "prop-types";
+import React, { Component } from "react";
+import "./dropdown.scss"; //8. Add styles so it will be custom dropdown based on div's (not select element)
 
-import "./dropdown.scss";
-
-function Dropdown({ placeholder, options = [], selected, handleOnSelect }) {
-  const [open, setOpen] = useState(false);
-  const toggle = () => setOpen(!open);
-
-  return (
-    <>
-      <div className="dropdown">
-        <button className="btn dropdown-btn" onClick={() => toggle()}>
-          {selected.value || placeholder}
-        </button>
-        {open && (
-          <ul className="dropdown-menu">
-            {options.map(opt => {
-              return (
-                <li
-                  key={opt.id}
-                  className={`dropdown-item`}
-                  onClick={() => {
-                    handleOnSelect(opt);
-                    toggle();
-                  }}
-                >
-                  <span>{opt.value} </span>
-                  <span className="dot">
-                    {selected.id === opt.id ? "·" : ""}
-                  </span>
-                </li>
-              );
-            })}
-          </ul>
-        )}
-      </div>
-    </>
-  );
+// 8. dropdown option interface
+export interface IDropdownOption {
+  id: number;
+  value: string;
+  selected: boolean;
 }
 
-// 8.Add all types/interfaces like if it will be Production code
-Dropdown.propTypes = {
-  placeholder: PropTypes.string,
-  options: PropTypes.arrayOf(
-    PropTypes.shape({
-      id: PropTypes.number,
-      value: PropTypes.string
-    })
-  ),
-  selected: PropTypes.object
-};
+// 8. dropdown props interface
+interface Props {
+  placeholder: string;
+  options: IDropdownOption[];
+  optSelected?: string;
+  handleOnSelect?: (id) => void;
+}
+
+// 8. dropdown state interface
+interface State {
+  isOpen: boolean;
+}
+
+class Dropdown extends Component<Props, State> {
+  constructor(props: Props) {
+    super(props);
+    this.state = this.initState();
+  }
+
+  initState() {
+    return {
+      isOpen: false
+    };
+  }
+
+  toggle() {
+    this.setState(prevState => ({
+      isOpen: !prevState.isOpen
+    }));
+  }
+
+  handleOnClick(opt) {
+    this.props.handleOnSelect(opt.id);
+    this.toggle();
+  }
+
+  render() {
+    return (
+      <>
+        <div className="dropdown">
+          <button className="btn dropdown-btn" onClick={() => this.toggle()}>
+            {/* 7. If nothing selected — placeholder should be shown */}
+            {this.props.optSelected || this.props.placeholder}
+          </button>
+          {this.state.isOpen && (
+            <ul className="dropdown-menu">
+              {this.props.options.map(opt => {
+                return (
+                  <li
+                    key={opt.id}
+                    className={`dropdown-item`}
+                    onClick={() => {
+                      this.handleOnClick(opt);
+                    }}
+                  >
+                    <span>{opt.value}</span>
+                    <span className="dot">{opt.selected ? "·" : ""}</span>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </div>
+      </>
+    );
+  }
+}
 
 export default Dropdown;
